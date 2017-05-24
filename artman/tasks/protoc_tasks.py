@@ -37,8 +37,8 @@ class ProtoDescGenTask(task_base.TaskBase):
                 desc_proto_path=None, excluded_proto_path=[]):
         desc_proto_path = desc_proto_path or []
         desc_protos = list(
-            task_utils.find_protos(src_proto_path + desc_proto_path,
-                                   excluded_proto_path))
+            protoc_utils.find_protos(src_proto_path + desc_proto_path,
+                                     excluded_proto_path))
         header_proto_path = import_proto_path + desc_proto_path
         header_proto_path.extend(src_proto_path)
         desc_out_file = task_utils.api_full_name(
@@ -88,7 +88,7 @@ class ProtocCodeGenTaskBase(task_base.TaskBase):
         # time, and *only* the protos in that package. This doesn't break
         # other languages, so we do it that way for all of them.
         for (dirname, protos) in protoc_utils.group_by_dirname(
-                task_utils.find_protos(src_proto_path, excluded_proto_path)).items():
+                protoc_utils.find_protos(src_proto_path, excluded_proto_path)).items():
             self.exec_command(proto_params.proto_compiler_command +
                 protoc_utils.protoc_header_params(
                     import_proto_path + src_proto_path, toolkit_path) +
@@ -280,11 +280,12 @@ class GoExtractImportBaseTask(task_base.TaskBase):
 class JavaProtoCopyTask(task_base.TaskBase):
     """Copies the .proto files into the grpc_code_dir directory
     """
-    def execute(self, src_proto_path, proto_code_dir):
+    def execute(self, src_proto_path, proto_code_dir, excluded_proto_path=[]):
         grpc_proto_dir = os.path.join(proto_code_dir, 'src', 'main', 'proto')
         for proto_path in src_proto_path:
             index = protoc_utils.find_google_dir_index(proto_path)
-            for src_proto_file in protoc_utils.find_proto_files(proto_path):
+            for src_proto_file in protoc_utils.find_protos(
+                    [proto_path], excluded_proto_path):
                 relative_proto_file = src_proto_file[index:]
                 dst_proto_file = os.path.join(
                     grpc_proto_dir, relative_proto_file)

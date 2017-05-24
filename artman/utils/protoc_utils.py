@@ -298,11 +298,25 @@ def prepare_pkg_dir(output_dir, api_name, api_version, organization_name,
     return pkg_dir
 
 
-def find_proto_files(proto_path):
-    for dirpath, subdirs, files in os.walk(proto_path):
-        for f in files:
-            if f.endswith('.proto'):
-                yield os.path.join(dirpath, f)
+def find_protos(proto_paths, excluded_proto_path):
+    """Searches along `proto_path` for .proto files and returns a generator of
+    paths"""
+    if type(proto_paths) is not list:
+        raise ValueError("proto_paths must be a list")
+    for path in proto_paths:
+        for root, _, files in os.walk(path):
+            for proto in files:
+                is_excluded = _is_proto_excluded(os.path.join(root, proto),
+                                                 excluded_proto_path)
+                if os.path.splitext(proto)[1] == '.proto' and not is_excluded:
+                    yield os.path.join(root, proto)
+
+
+def _is_proto_excluded(proto, excluded_proto_path):
+    for excluded_path in excluded_proto_path:
+        if excluded_path in proto:
+            return True
+    return False
 
 
 def _find_protobuf_path(toolkit_path):
