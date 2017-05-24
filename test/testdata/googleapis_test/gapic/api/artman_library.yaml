@@ -11,6 +11,8 @@ common:
     - test/fake-repos/fake-mixin-proto
   src_proto_path:
     - test/fake-repos/fake-proto
+  excluded_proto_path:
+    - test/fake-repos/fake-proto/excluded
   service_yaml:
     - ${REPOROOT}/test/testdata/gapi-example-library-proto/src/main/proto/google/example/library/library.yaml
   gapic_api_yaml:

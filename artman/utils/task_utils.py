@@ -87,7 +87,7 @@ def instantiate_tasks(task_class_list, inject):
     return tasks
 
 
-def find_protos(proto_paths):
+def find_protos(proto_paths, excluded_proto_path):
     """Searches along `proto_path` for .proto files and returns a generator of
     paths"""
     if type(proto_paths) is not list:
@@ -95,5 +95,14 @@ def find_protos(proto_paths):
     for path in proto_paths:
         for root, _, files in os.walk(path):
             for proto in files:
-                if os.path.splitext(proto)[1] == '.proto':
+                is_excluded = _is_proto_excluded(os.path.join(root, proto),
+                                                 excluded_proto_path)
+                if os.path.splitext(proto)[1] == '.proto' and not is_excluded:
                     yield os.path.join(root, proto)
+
+
+def _is_proto_excluded(proto, excluded_proto_path):
+    for excluded_path in excluded_proto_path:
+        if excluded_path in proto:
+            return True
+    return False
