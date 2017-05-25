@@ -59,6 +59,7 @@ class TaskBase(Task):
         """ Execute command and return output.
 
         TODO(ethanbao): Use subprocess.Popen which is recommended."""
+        print ' '.join(args)
         try:
             self.log(' '.join(args), level=logging.DEBUG)
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)
