@@ -40,6 +40,7 @@ class GapicConfigGenTask(task_base.TaskBase):
             '--descriptor_set=' + os.path.abspath(descriptor_set),
             '--output=' + os.path.abspath(config_gen_path)
         ] + service_args
+
         self.exec_command(
             task_utils.gradle_task(toolkit_path, 'runConfigGen', args))
 
@@ -85,7 +86,8 @@ class GapicCodeGenTask(task_base.TaskBase):
 
     def execute(self, language, toolkit_path, descriptor_set, service_yaml,
                 gapic_api_yaml, gapic_language_yaml, package_metadata_yaml,
-                gapic_code_dir, api_name, api_version, organization_name):
+                gapic_code_dir, api_name, api_version, organization_name,
+                publish):
         self.exec_command(['rm', '-rf', '%s/*' % gapic_code_dir])
         gapic_yaml = gapic_api_yaml + gapic_language_yaml
         gapic_args = ['--gapic_yaml=' + os.path.abspath(yaml)
@@ -97,6 +99,10 @@ class GapicCodeGenTask(task_base.TaskBase):
             '--package_yaml=' + os.path.abspath(package_metadata_yaml),
             '--output=' + os.path.abspath(gapic_code_dir),
         ] + service_args + gapic_args
+
+        if publish == 'sample_app':
+            args += ['--enabled_artifacts=sample_app']
+
         self.exec_command(
             task_utils.gradle_task(toolkit_path, 'runCodeGen', args))
         return gapic_code_dir

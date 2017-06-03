@@ -125,7 +125,7 @@ def parse_args(*args):
              'argument.',
     )
     parser.add_argument('--publish',
-        choices=('github', 'local', 'maven', 'noop'),
+        choices=('github', 'local', 'maven', 'noop', 'sample_app'),
         default=None,
         help='Set where to publish the code. Options are "github", "local", '
              '"maven", and "noop". The default is "local" (unless --batch is '
