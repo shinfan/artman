@@ -14,6 +14,7 @@
 
 """Tasks related to Python gRPC code generation"""
 
+import io
 import os
 import re
 import tempfile
@@ -21,8 +22,8 @@ import time
 
 from ruamel import yaml
 
+from artman.utils import protoc_utils
 from artman.tasks import task_base
-from artman.utils import task_utils
 
 
 class PythonChangePackageTask(task_base.TaskBase):
@@ -55,7 +56,7 @@ class PythonChangePackageTask(task_base.TaskBase):
     # TODO (geigerj): add regex for documentation link updates?
 
     def execute(self, src_proto_path, import_proto_path, common_protos_yaml):
-        with open(common_protos_yaml) as file_:
+        with io.open(common_protos_yaml) as file_:
             common_protos_data = yaml.load(file_, Loader=yaml.Loader)
 
         # Treat google.protobuf, google.iam as a common proto package, even
@@ -82,8 +83,9 @@ class PythonChangePackageTask(task_base.TaskBase):
         return list(new_src_path), new_import_path
 
     def _extract_base_dirs(self, proto_file):
-        """Returns proto file path derived from the package name"""
-        with open(proto_file, 'r') as proto:
+        """Return the proto file path derived from the package name."""
+
+        with io.open(proto_file, 'rt', encoding='UTF-8') as proto:
             for line in proto:
                 pkg = self._PACKAGE_REGEX.match(line)
                 if pkg:
@@ -113,8 +115,8 @@ class PythonChangePackageTask(task_base.TaskBase):
 
     def _copy_proto(self, src, dest, common_protos):
         """Copies a proto while fixing its imports"""
-        with open(src, 'r') as src_lines:
-            with open(dest, 'w+') as dest_file:
+        with io.open(src, 'r', encoding='UTF-8') as src_lines:
+            with io.open(dest, 'w+', encoding='UTF-8') as dest_file:
                 for line in src_lines:
                     imprt = self._IMPORT_REGEX.match(line)
                     if imprt:
@@ -128,7 +130,7 @@ class PythonChangePackageTask(task_base.TaskBase):
             self, src_directories, destination_directory, common_protos,
             paths=None):
         for path in src_directories:
-            protos = list(task_utils.find_protos([path]))
+            protos = list(protoc_utils.find_protos([path], []))
             for proto in protos:
                 src_base_dirs = self._extract_base_dirs(proto)
                 sub_new_src = os.path.join(

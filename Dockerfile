@@ -45,8 +45,15 @@ RUN mkdir -p /usr/src/protoc/ \
 # Install GRPC and Protobuf.
 RUN pip3 install --upgrade pip \
   && pip3 install \
-    grpcio==1.3.0 \
+    # Ensure that grpcio matches requirements.txt
+    grpcio==1.3.5 \
     protobuf==3.3.0
+
+# Install grpc_csharp_plubin
+RUN curl -L https://www.nuget.org/api/v2/package/Grpc.Tools/1.3.6 -o temp.zip \
+  && unzip -p temp.zip tools/linux_x64/grpc_csharp_plugin > /usr/local/bin/grpc_csharp_plugin \
+  && chmod +x /usr/local/bin/grpc_csharp_plugin \
+  && rm temp.zip
 
 # Install Oracle JDK 8
 RUN add-apt-repository ppa:openjdk-r/ppa \
@@ -102,25 +109,14 @@ RUN gem install rake --no-ri --no-rdoc \
   && gem install rake --version '= 10.5.0' --no-ri --no-rdoc \
   && gem install grpc-tools --version '=1.0.0' --no-ri --no-rdoc
 
-# Install couple of git repos
-RUN git clone https://github.com/googleapis/googleapis
-RUN git clone https://github.com/googleapis/toolkit
-ENV TOOLKIT_HOME /toolkit
-
-# Install toolkit. Must sudo to download gradle plugins.
-RUN cd /toolkit \
-  && ./gradlew install \
-  && cd /
-
-# Install googleapis protocol compiler plugin which is needed to build gapic resource classes.
-RUN pip3 install -e git+https://github.com/googleapis/proto-compiler-plugin#egg=remote
-
 # Install PHP protobuf plugin.
 RUN gem install ronn --no-ri --no-rdoc \
   && git clone https://github.com/stanley-cheung/Protobuf-PHP.git \
   && cd /Protobuf-PHP \
   && rake pear:package version=1.0 --trace \
   && pear install Protobuf-1.0.tgz \
+  && cd . \
+  && rm -rf /Protobuf-PHP \
 
   # Install PHP formatting tools
   && pear install PHP_CodeSniffer-2.7.0 \
@@ -128,9 +124,34 @@ RUN gem install ronn --no-ri --no-rdoc \
   && chmod a+x /usr/local/bin/php-cs-fixer \
   && cd /
 
+# Set up tools for Python codegen; these are:
+#   pandoc: an apt package that can convert text between formats
+#     (example: Markdown to Restructured Text)
+#   protoc-docs-plugin: A protoc plugin to add docstrings to the Python
+#     protoc output.cd
+RUN apt-get update \
+  && apt-get install -y pandoc \
+  && pip3 install protoc-docs-plugin \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install couple of git repos
+RUN git clone https://github.com/googleapis/googleapis \
+  && rm -rf /googleapis/.git/
+RUN git clone https://github.com/googleapis/toolkit \
+  && cd toolkit/ \
+  && git checkout 9316dc51b83a648f7c85ac1c15d57c945f33f2cd \
+  && cd .. \
+  && rm -rf /toolkit/.git/
+ENV TOOLKIT_HOME /toolkit
+
+# Install toolkit.
+RUN cd /toolkit \
+  && ./gradlew install \
+  && cd /
+
 # Setup git config used by github commit pushing.
 RUN git config --global user.email googleapis-publisher@google.com \
-  && git config --global user.name "Googleapis Publisher"
+  && git config --global user.name "Google API Publisher"
 
 # Setup artman user config
 # Note: This is somewhat brittle as it relies on a specific path
@@ -143,8 +164,4 @@ RUN mkdir -p /root/
 ADD artman-user-config-in-docker.yaml /root/.artman/config.yaml
 
 # Install artman and run the smoke test.
-RUN pip3 install googleapis-artman==0.4.3
-
-# TODO (lukesneeringer): Move smoke tests to a different venue.
-# RUN smoketest_artman.py \
-#   && rm -rf /artman/output
+RUN pip3 install googleapis-artman==0.4.6

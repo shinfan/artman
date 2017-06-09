@@ -14,9 +14,12 @@
 
 """Utilities for protoc tasks"""
 
+import collections
 import os
 import re
 import subprocess
+import types
+import sys
 
 import six
 
@@ -177,7 +180,9 @@ class _PythonProtoParams(_SimpleProtoParams):
         return self.params.code_root(output_dir)
 
     def lang_out_param(self, output_dir, with_grpc):
-        return '--python_out={}'.format(self.code_root(output_dir))
+        return '--python_out={root} --pydocstring_out={root}'.format(
+            root=self.code_root(output_dir),
+        )
 
     def grpc_plugin_path(self, dummy_toolkit_path):
         # No plugin for grpc.tools
@@ -188,7 +193,7 @@ class _PythonProtoParams(_SimpleProtoParams):
 
     @property
     def proto_compiler_command(self):
-        return ['python', '-m', 'grpc.tools.protoc']
+        return [sys.executable, '-m', 'grpc.tools.protoc']
 
 
 PROTO_PARAMS_MAP = {
@@ -235,7 +240,7 @@ def protoc_proto_params(proto_params, pkg_dir, gapic_api_yaml, with_grpc):
     params = []
     lang_param = proto_params.lang_out_param(pkg_dir, with_grpc)
     if lang_param:
-        params.append(lang_param)
+        params += lang_param.split(' ')
     # plugin out must come after lang out
     plugin_param = proto_params.proto_plugin_path()
     plugin_out = proto_params.plugin_out_param(pkg_dir, gapic_api_yaml)
@@ -298,15 +303,32 @@ def prepare_pkg_dir(output_dir, api_name, api_version, organization_name,
     return pkg_dir
 
 
-def find_proto_files(proto_path):
-    for dirpath, subdirs, files in os.walk(proto_path):
-        for f in files:
-            if f.endswith('.proto'):
-                yield os.path.join(dirpath, f)
+def find_protos(proto_paths, excluded_proto_path):
+    """Searches along `proto_paths` for .proto files and returns a generator of
+    paths"""
+    if not isinstance(proto_paths, (types.GeneratorType, collections.MutableSequence)):
+        raise ValueError("proto_paths must be a list")
+    for path in proto_paths:
+        for root, _, files in os.walk(path):
+            for proto in files:
+                is_excluded = _is_proto_excluded(os.path.join(root, proto),
+                                                 excluded_proto_path)
+                if os.path.splitext(proto)[1] == '.proto' and not is_excluded:
+                    yield os.path.join(root, proto)
 
 
+def _is_proto_excluded(proto, excluded_proto_path):
+    for excluded_path in excluded_proto_path:
+        if excluded_path in proto:
+            return True
+    return False
+
+_protobuf_path = None
 def _find_protobuf_path(toolkit_path):
     """Fetch and locate protobuf source"""
-    logger.info('Searching for latest protobuf source')
-    return task_utils.get_gradle_task_output(
-        'showProtobufPath', toolkit_path)
+    global _protobuf_path
+    if not _protobuf_path:
+        logger.info('Searching for latest protobuf source')
+        _protobuf_path = task_utils.get_gradle_task_output(
+            'showProtobufPath', toolkit_path)
+    return _protobuf_path
