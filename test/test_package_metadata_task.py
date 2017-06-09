@@ -54,6 +54,7 @@ class PackageMetadataConfigTest(unittest.TestCase):
             package_defaults_yaml=package_defaults_yaml,
             proto_deps=['googleapis-common-protos'],
             package_type="grpc_client",
+            publish="release",
             src_proto_path=['path/to/protos'],
             generated_package_version={'lower': '0.17.29', 'upper': '0.18dev'},
             release_level='beta'

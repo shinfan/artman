@@ -40,7 +40,6 @@ class GapicConfigGenTask(task_base.TaskBase):
             '--descriptor_set=' + os.path.abspath(descriptor_set),
             '--output=' + os.path.abspath(config_gen_path)
         ] + service_args
-
         self.exec_command(
             task_utils.gradle_task(toolkit_path, 'runConfigGen', args))
 
@@ -100,6 +99,7 @@ class GapicCodeGenTask(task_base.TaskBase):
             '--output=' + os.path.abspath(gapic_code_dir),
         ] + service_args + gapic_args
 
+        # Enable sample app generator if the publisher is set to sample_app
         if publish == 'sample_app':
             args += ['--enabled_artifacts=surface']
             args += ['--enabled_artifacts=sample_app']

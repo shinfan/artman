@@ -60,7 +60,6 @@ class TaskBase(Task):
 
         TODO(ethanbao): Use subprocess.Popen which is recommended."""
         try:
-            print ' '.join(args)
             self.log(' '.join(args), level=logging.DEBUG)
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)
             if output:
