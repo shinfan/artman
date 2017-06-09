@@ -101,6 +101,7 @@ class GapicCodeGenTask(task_base.TaskBase):
         ] + service_args + gapic_args
 
         if publish == 'sample_app':
+            args += ['--enabled_artifacts=surface']
             args += ['--enabled_artifacts=sample_app']
 
         self.exec_command(

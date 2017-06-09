@@ -40,7 +40,10 @@ class _JavaSampleTask(task_base.TaskBase):
 
         userhome = os.path.expanduser('~')
         gapic_loc = os.path.realpath(gapic_code_dir).replace(userhome, '~')
-        logger.success('Code generated: {0}'.format(gapic_loc))
+        logger.success('Sample client generated: {0}'.format(gapic_loc))
+
+        self.exec_command([gapic_code_dir + '/gradlew', '-p', gapic_code_dir, 'jar'])
+        logger.success('Jar file created: {0}/build/libs'.format(gapic_loc))
 
 SAMPLE_TASK_DICT = {
     'java': _JavaSampleTask,

@@ -50,7 +50,7 @@ class PackageMetadataConfigGenTask(task_base.TaskBase):
 
     def _create_config(self, api_name, api_version, api_full_name, output_dir,
                        package_dependencies_yaml, package_defaults_yaml, proto_deps,
-                       proto_test_deps, language, local_paths, src_proto_path, package_type,e
+                       proto_test_deps, language, local_paths, src_proto_path, package_type,
                        publish, gapic_api_yaml, release_level=None,
                        generated_package_version=None):
         googleapis_dir = local_paths['googleapis']
@@ -75,7 +75,6 @@ class PackageMetadataConfigGenTask(task_base.TaskBase):
         if len(gapic_api_yaml) > 0:
             gapic_config_name = os.path.basename(gapic_api_yaml[0])
 
-        print publish
         dependency_type = 'local'
         if publish == 'sample_app':
             dependency_type = 'release'
@@ -99,7 +98,6 @@ class PackageMetadataConfigGenTask(task_base.TaskBase):
         config.update(package_dependencies)
         config.update(package_defaults)
 
-        print config
         return config
 
     # Separated so that this can be mocked for testing
