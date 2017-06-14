@@ -30,7 +30,7 @@ class PackageMetadataConfigGenTask(task_base.TaskBase):
     def execute(self, api_name, api_version, organization_name, output_dir,
                 package_dependencies_yaml, package_defaults_yaml, proto_deps,
                 language, local_paths, src_proto_path, package_type,
-                gapic_api_yaml, release_level=None, packaging='single_artifact',
+                gapic_api_yaml, release_level=None, packaging='single-artifact',
                 generated_package_version=None, proto_test_deps=None):
         api_full_name = task_utils.api_full_name(
             api_name, api_version, organization_name)
@@ -51,7 +51,7 @@ class PackageMetadataConfigGenTask(task_base.TaskBase):
     def _create_config(self, api_name, api_version, api_full_name, output_dir,
                        package_dependencies_yaml, package_defaults_yaml, proto_deps,
                        proto_test_deps, language, local_paths, src_proto_path, package_type,
-                       gapic_api_yaml, release_level=None,packaging='single_artifact',
+                       gapic_api_yaml, release_level=None,packaging='single-artifact',
                        generated_package_version=None):
         googleapis_dir = local_paths['googleapis']
         googleapis_path = os.path.commonprefix(
@@ -76,7 +76,7 @@ class PackageMetadataConfigGenTask(task_base.TaskBase):
             gapic_config_name = os.path.basename(gapic_api_yaml[0])
 
         dependency_type = 'local'
-        if packaging == 'single_artifact':
+        if packaging == 'single-artifact':
             dependency_type = 'release'
 
         config = {
@@ -109,7 +109,7 @@ class JavaGrpcPackageMetadataConfigGenTask(PackageMetadataConfigGenTask):
     def _create_config(self, api_name, api_version, api_full_name, output_dir,
                 package_dependencies_yaml, package_defaults_yaml, proto_deps,
                 proto_test_deps, language, local_paths, src_proto_path, package_type,
-                gapic_api_yaml, release_level=None, packaging='single_artifact',
+                gapic_api_yaml, release_level=None, packaging='single-artifact',
                 generated_package_version=None):
         config = super(JavaGrpcPackageMetadataConfigGenTask, self)._create_config(
             api_name, api_version, api_full_name, output_dir,
@@ -125,7 +125,7 @@ class JavaProtoPackageMetadataConfigGenTask(PackageMetadataConfigGenTask):
     def _create_config(self, api_name, api_version, api_full_name, output_dir,
                 package_dependencies_yaml, package_defaults_yaml, proto_deps,
                 proto_test_deps, language, local_paths, src_proto_path, package_type,
-                gapic_api_yaml, release_level=None, packaging='single_artifact',
+                gapic_api_yaml, release_level=None, packaging='single-artifact',
                 generated_package_version=None):
         config = super(JavaProtoPackageMetadataConfigGenTask, self)._create_config(
             api_name, api_version, api_full_name, output_dir,
