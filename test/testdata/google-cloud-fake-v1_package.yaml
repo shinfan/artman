@@ -61,4 +61,4 @@ proto_deps:
 - googleapis-common-protos
 package_type: grpc_client
 gapic_config_name: ''
-dependency_type: 'local'
+dependency_type: 'release'

@@ -86,7 +86,7 @@ class GapicCodeGenTask(task_base.TaskBase):
     def execute(self, language, toolkit_path, descriptor_set, service_yaml,
                 gapic_api_yaml, gapic_language_yaml, package_metadata_yaml,
                 gapic_code_dir, api_name, api_version, organization_name,
-                publish):
+                packaging='single_artifact'):
         self.exec_command(['rm', '-rf', '%s/*' % gapic_code_dir])
         gapic_yaml = gapic_api_yaml + gapic_language_yaml
         gapic_args = ['--gapic_yaml=' + os.path.abspath(yaml)
@@ -99,17 +99,32 @@ class GapicCodeGenTask(task_base.TaskBase):
             '--output=' + os.path.abspath(gapic_code_dir),
         ] + service_args + gapic_args
 
-        # Enable sample app generator if the publisher is set to sample_app
-        if publish == 'sample_app':
+        # Enable sample app generator if the packaging is set to single_artifact
+        if packaging == 'single_artifact':
             args += ['--enabled_artifacts=surface']
+            args += ['--enabled_artifacts=test']
             args += ['--enabled_artifacts=sample_app']
 
         self.exec_command(
             task_utils.gradle_task(toolkit_path, 'runCodeGen', args))
+
         return gapic_code_dir
 
     def validate(self):
         return [gapic_requirements.GapicRequirements]
+
+
+class JavaGapicPackagingTask(task_base.TaskBase):
+    def execute(self, gapic_code_dir, packaging='single_artifact',
+                grpc_code_dir=None, proto_code_dir=None):
+        if packaging == 'single_artifact':
+            if grpc_code_dir:
+                self.exec_command(['cp', '-rf', grpc_code_dir, gapic_code_dir])
+
+            if proto_code_dir:
+                self.exec_command(['cp', '-rf', proto_code_dir, gapic_code_dir])
+
+            self.exec_command([gapic_code_dir + '/gradlew', '-p', gapic_code_dir, 'jar'])
 
 
 class GapicPackmanTask(packman_tasks.PackmanTaskBase):
