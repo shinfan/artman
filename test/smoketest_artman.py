@@ -35,7 +35,7 @@ ARTMAN_CONFIG_BLACKLIST = [
     'artman_bigtable_admin.yaml'
 ]
 
-SUPPORTED_LANGS = ['python', 'java', 'ruby', 'nodejs', 'php', 'go', 'csharp']
+SUPPORTED_LANGS = ['java']
 
 
 def run_smoke_test(apis):
