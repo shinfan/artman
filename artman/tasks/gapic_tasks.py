@@ -66,14 +66,15 @@ class GapicConfigMoveTask(task_base.TaskBase):
         conf_out = os.path.abspath(gapic_api_yaml[0])
         if os.path.exists(conf_out):
             # TODO (issue #80): no need to test in remote environment
-            raise ValueError(error_fmt + 'File already exists')
-        else:
-            return conf_out
+            olderVersion = conf_out + '.old'
+            print('File already exists, save the old version as ' + olderVersion)
+            self.exec_command(['mv', conf_out, olderVersion])
+        return conf_out
 
     def execute(self, gapic_config_dir, gapic_api_yaml):
         conf_out = self._move_to(gapic_config_dir, gapic_api_yaml)
         self.exec_command(['mkdir', '-p', os.path.dirname(conf_out)])
-        self.exec_command(['mv', gapic_config_dir, conf_out])
+        self.exec_command(['cp', gapic_config_dir, conf_out])
         return
 
     def validate(self):
