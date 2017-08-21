@@ -70,9 +70,11 @@ class PackageMetadataConfigGenTask(task_base.TaskBase):
         if generated_package_version is not None:
             release_version_type = package_defaults['release_level'][language]
             if release_version_type != 'ga':
-                release_version_type = 'non_ga'
-            package_defaults['generated_package_version'][release_version_type][language] = (
-                generated_package_version)
+                package_defaults['generated_package_version'][language] = (
+                    generated_package_version)
+            else:
+                package_defaults['generated_ga_package_version'][language] = (
+                    generated_package_version)
 
         gapic_config_name = ''
         if len(gapic_api_yaml) > 0:
